@@ -1,1 +1,1 @@
-FROM openjdk:17-jdk-slim# Working directoryWORKDIR /app# Copy from your host(PC, laptop) to containerCOPY target/BookStoreBackEnd-master.jar BookStoreBackEnd-master.jarEXPOSE 8080ENTRYPOINT ["java", "-jar", "BookStoreBackEnd-master.jar"]
+FROM openjdk:17-jdk-slimWORKDIR /appCOPY target/BookStoreBackEnd-master.jar BookStoreBackEnd-master.jarEXPOSE 8080ENTRYPOINT ["java", "-jar", "BookStoreBackEnd-master.jar"]
