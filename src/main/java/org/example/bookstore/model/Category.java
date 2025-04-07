@@ -23,6 +23,9 @@ public class Category {
     @Column(name = "category_name")
     private String name;
 
+    @Column(name = "category_img")
+    private String category_img;
+
     @OneToMany(mappedBy = "category")
     private Set<Book> books;
 

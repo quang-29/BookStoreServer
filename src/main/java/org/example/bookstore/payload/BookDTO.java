@@ -22,6 +22,8 @@ public class BookDTO {
     private String imagePath;
     private Long stock;
     private Long sold;
+    private int page;
+    private Double averageRating;
     @JsonProperty("category")
     private String categoryName;
     @JsonProperty("author")

@@ -20,7 +20,6 @@ public interface AuthenticationService {
     LogInResponse logIn(String email, String password);
     IntrospectTokenResponse introspectToken(IntrospectRequest request) throws ParseException, JOSEException;
     void logOut(HttpServletRequest request) throws ParseException, JOSEException;
-
     User saveDeviceToken(String email, String deviceToken) throws  Exception;
     RefreshTokenResponse refreshToken(RefreshTokenRequest request) throws ParseException, JOSEException;
 }

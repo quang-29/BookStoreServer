@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,20 +28,24 @@ public class Author {
     @Column(name = "author_name")
     private String name;
 
-    @Column(name = "bio")
-    private String bio;
+    @Column(name = "biography")
+    private String biography;
 
     @Email
     @Column(name = "email")
     private String email;
 
-    @Column(name = "address")
-    private String address;
+    @Column(name = "website")
+    private String website;
 
-    @Size(min = 10, max = 10, message = "Mobile Number must be exactly 10 digits long")
-    @Pattern(regexp = "^\\d{10}$", message = "Mobile Number must contain only Numbers")
-    @Column(name = "phone_number")
-    private String phone;
+    @Column(name = "birth_date")
+    private Date birth_date;
+
+    @Column(name = "country")
+    private String country;
+
+    @Column(name = "image_path")
+    private String image_path;
 
     @OneToMany(mappedBy = "author")
     private Set<Book> books;

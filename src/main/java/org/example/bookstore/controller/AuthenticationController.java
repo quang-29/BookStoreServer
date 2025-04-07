@@ -56,7 +56,7 @@ public class AuthenticationController {
             String jwt = jwtTokenProvider.createToken(authentication);
             DataResponse dataResponse = DataResponse.builder()
                     .code(HttpStatus.OK.value())
-                    .message("Dang nhap thanh cong")
+                    .message(LOGIN_SUCCESS)
                     .data(new AuthenticationResponse(jwt))
                     .status(HttpStatus.OK)
                     .timestamp(LocalDateTime.now())

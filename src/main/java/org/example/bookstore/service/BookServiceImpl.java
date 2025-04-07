@@ -59,9 +59,8 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookResponse getAllBooks(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
-        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
-        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize);
         Page<Book> pageBooks = bookRepository.findAll(pageDetails);
         List<Book> books = pageBooks.getContent();
         List<BookDTO> bookDTOList = books.stream()
@@ -112,7 +111,7 @@ public class BookServiceImpl implements BookService {
         Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
-        Page<Book> pageBooks = bookRepository.findByCategory_Name(category, pageDetails);
+        Page<Book> pageBooks = bookRepository.getBookByCategory(category, pageDetails);
         List<BookDTO> bookDTOS =  pageBooks.getContent().stream()
                 .map(book -> {
                             BookDTO bookDTO = modelMapper.map(book, BookDTO.class);
@@ -248,6 +247,29 @@ public class BookServiceImpl implements BookService {
                 .orElseThrow(() -> new ResourceNotFoundException("Book","bookId",id));
         bookRepository.delete(book);
         return true;
+    }
+
+    @Override
+    public BookResponse getBookUpSale(Integer pageNumber, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<Book> pageBooks = bookRepository.getBookUpSale(pageable);
+        List<BookDTO> listBookDTO = pageBooks.getContent().stream()
+                .map(book -> {
+                            BookDTO bookDTO = modelMapper.map(book, BookDTO.class);
+                            bookDTO.setAuthorName(book.getAuthor().getName());
+                            bookDTO.setCategoryName(book.getCategory().getName());
+                            return bookDTO;
+                        }
+                ).toList();
+        BookResponse bookResponse = new BookResponse();
+        bookResponse.setContent(listBookDTO);
+        bookResponse.setPageNumber(pageBooks.getNumber());
+        bookResponse.setPageSize(pageBooks.getSize());
+        bookResponse.setTotalElements(pageBooks.getTotalElements());
+        bookResponse.setTotalPages(pageBooks.getTotalPages());
+        bookResponse.setLastPage(pageBooks.isLast());
+        return bookResponse;
+
     }
 
 }

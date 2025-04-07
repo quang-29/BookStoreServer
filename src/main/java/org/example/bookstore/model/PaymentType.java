@@ -11,7 +11,7 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name = "payment_type")
+@Table(name = "paymentType")
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentType {

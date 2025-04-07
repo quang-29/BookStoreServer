@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "roles") // Tên bảng trong database
+@Table(name = "role")
 public class Role {
 
     @Id

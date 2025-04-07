@@ -15,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "token_invalid")
+@Table(name = "tokenInvalid")
 public class TokenInvalid {
 
     @Id
