@@ -2,10 +2,7 @@ package org.example.bookstore.service;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
-import lombok.Setter;
 import org.example.bookstore.enums.ErrorCode;
-import org.example.bookstore.enums.OrderStatus;
 import org.example.bookstore.enums.PaymentStatus;
 import org.example.bookstore.enums.PaymentType;
 import org.example.bookstore.exception.AppException;
@@ -14,7 +11,6 @@ import org.example.bookstore.model.payment.Payment;
 import org.example.bookstore.payload.Note;
 import org.example.bookstore.payload.OrderDTO;
 import org.example.bookstore.payload.OrderItemDTO;
-import org.example.bookstore.payload.UserOrderDTO;
 import org.example.bookstore.payload.order.PlaceOrderDTO;
 import org.example.bookstore.payload.response.PlaceOrderResponse;
 import org.example.bookstore.repository.*;
@@ -30,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -73,6 +70,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public PlaceOrderResponse placeOrder(PlaceOrderDTO placeOrderDTO, HttpServletRequest httpServletRequest) {
+        // Validate input
+        if (placeOrderDTO.getTotalPrice() < 0 || placeOrderDTO.getShippingFee() < 0) {
+            throw new AppException(ErrorCode.INVALID_PRICE);
+        }
 
         Cart cart = cartRepository.findById(placeOrderDTO.getCartId())
                 .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
@@ -83,23 +84,27 @@ public class OrderServiceImpl implements OrderService {
 
         List<CartItem> cartItems = cart.getCartItems();
 
-        if (cartItems.size() == 0) {
+        if (cartItems.isEmpty()) {
             throw new AppException(ErrorCode.ORDER_ERROR);
         }
 
-        List<UserAddress> userAddressList = userAddressService.getAddressListByUser(username);
-        UserAddress addressTo = null;
-        for(UserAddress userAddress : userAddressList){
-            if(userAddress.getId() == placeOrderDTO.getAddressId()){
-                addressTo = userAddress;
-                break;
-            }
-        }
-        if(addressTo == null){
-            throw new RuntimeException("Invalid request: user address not found");
+        // Calculate total price from cart items
+        BigDecimal calculatedTotalPrice = cartItems.stream()
+                .map(item -> BigDecimal.valueOf(item.getBookPrice()).multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Validate total price matches
+        if (calculatedTotalPrice.compareTo(BigDecimal.valueOf(placeOrderDTO.getTotalPrice())) != 0) {
+            throw new AppException(ErrorCode.PRICE_MISMATCH);
         }
 
-        long totalPay = placeOrderDTO.getTotalPrice() + placeOrderDTO.getShippingFee();
+        List<UserAddress> userAddressList = userAddressService.getAddressListByUser(username);
+        UserAddress addressTo = userAddressList.stream()
+                .filter(address -> address.getId() == placeOrderDTO.getAddressId())
+                .findFirst()
+                .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+
+        BigDecimal totalPay = calculatedTotalPrice.add(BigDecimal.valueOf(placeOrderDTO.getShippingFee()));
         PaymentType paymentType = PaymentType.fromString(placeOrderDTO.getPaymentType());
 
         if(paymentType == null) {
@@ -169,9 +174,6 @@ public class OrderServiceImpl implements OrderService {
             placeOrderResponse.setPaymentUrl(paymentUrl);
         }
         return placeOrderResponse;
-
-
-
     }
 
     @Override
