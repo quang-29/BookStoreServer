@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.xml.crypto.Data;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
@@ -65,5 +66,21 @@ public class CartController {
                 .status(HttpStatus.OK)
                 .build();
         return new ResponseEntity<>(dataResponse, HttpStatus.OK);
+    }
+
+    @PostMapping("/decreaseBookFromCart")
+    public ResponseEntity<DataResponse> decreaseBookFromCart(@RequestParam UUID cartId,
+                                                             @RequestParam UUID bookId
+    ) {
+        CartDTO cartDTO = cartService.decreaseProductFromCart(cartId, bookId);
+        DataResponse dataResponse = DataResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Success")
+                .status(HttpStatus.OK)
+                .data(cartDTO)
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(dataResponse, HttpStatus.OK);
+
     }
 }

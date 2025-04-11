@@ -27,6 +27,7 @@ public interface BookService {
 
     BookDTO updateBook(UUID id, BookDTO bookDTO);
     boolean deleteBook(UUID id);
+    BookResponse getBookUpSale(Integer pageNumber, Integer pageSize);
 
 
 }

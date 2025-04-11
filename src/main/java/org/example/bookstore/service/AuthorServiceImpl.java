@@ -30,7 +30,7 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public AuthorDTO createAuthor(AuthorDTO authorDTO) {
-        boolean existedAuthor = authorRepository.existsByName(authorDTO.getAuthorName());
+        boolean existedAuthor = authorRepository.existsByName(authorDTO.getName());
         if(existedAuthor){
             throw new AppException(ErrorCode.AUTHOR_EXISTED);
         }
@@ -45,11 +45,13 @@ public class AuthorServiceImpl implements AuthorService {
         Author author = authorRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.AUTHOR_NOT_FOUND)
         );
-        author.setName(authorDTO.getAuthorName());
-        author.setBio(authorDTO.getBio());
+        author.setName(authorDTO.getName());
+        author.setBiography(authorDTO.getBiography());
         author.setEmail(authorDTO.getEmail());
-        author.setPhone(authorDTO.getPhone());
-        author.setAddress(authorDTO.getAddress());
+        author.setCountry(authorDTO.getCountry());
+        author.setWebsite(authorDTO.getWebsite());
+        author.setImage_path(authorDTO.getImage_path());
+        author.setBirth_date(authorDTO.getBirth_date());
         Author savedAuthor = authorRepository.save(author);
         return modelMapper.map(savedAuthor, AuthorDTO.class);
     }

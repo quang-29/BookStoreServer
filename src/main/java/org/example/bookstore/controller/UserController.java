@@ -121,7 +121,7 @@ public class UserController {
 
     @PutMapping("/likeBook")
     public ResponseEntity<DataResponse> likedBook(@RequestParam UUID userId,
-                                                   @RequestParam UUID bookId) {
+                                                  @RequestParam UUID bookId) {
         String result = userService.likedBooks(userId, bookId);
         DataResponse dataResponse = DataResponse.builder()
                 .data("")
@@ -133,9 +133,9 @@ public class UserController {
         return ResponseEntity.status(dataResponse.getStatus()).body(dataResponse);
     }
 
-    @PutMapping("/removeLikedBooks")
+    @PutMapping("/unlikeBook")
     public ResponseEntity<DataResponse> removeLikedBooks(@RequestParam UUID userId,
-                                                   @RequestParam UUID bookId) {
+                                                         @RequestParam UUID bookId) {
         String result = userService.removeLikedBooks(userId, bookId);
         DataResponse dataResponse = DataResponse.builder()
                 .data("")

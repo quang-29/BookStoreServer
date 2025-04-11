@@ -14,5 +14,5 @@ import java.util.UUID;
 public class CategoryDTO {
     private UUID id;
     private String categoryName;
-//    private List<BookDTO> bookDTOList;
+    private String category_img;
 }

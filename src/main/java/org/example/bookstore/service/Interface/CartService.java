@@ -19,4 +19,6 @@ public interface CartService {
 
 
     boolean deleteProductFromCart(UUID cartId, UUID bookId);
+
+    CartDTO decreaseProductFromCart(UUID cartId, UUID bookId);
 }

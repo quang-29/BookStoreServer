@@ -146,4 +146,13 @@ public class BookController {
         return deleted ? ResponseEntity.ok("Book deleted successfully") :
                 ResponseEntity.badRequest().body("Failed to delete book");
     }
+
+    @GetMapping("/upSaleBook")
+    public ResponseEntity<BookResponse> upSaleBook(
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "10") Integer pageSize
+    ){
+        BookResponse book = bookService.getBookUpSale(pageNumber, pageSize);
+        return ResponseEntity.ok(book);
+    }
 }

@@ -250,4 +250,26 @@ public class BookServiceImpl implements BookService {
         return true;
     }
 
+    @Override
+    public BookResponse getBookUpSale(Integer pageNumber, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<Book> pageBooks = bookRepository.getBookUpSale(pageable);
+        List<BookDTO> listBookDTO = pageBooks.getContent().stream()
+                .map(book -> {
+                            BookDTO bookDTO = modelMapper.map(book, BookDTO.class);
+                            bookDTO.setAuthorName(book.getAuthor().getName());
+                            bookDTO.setCategoryName(book.getCategory().getName());
+                            return bookDTO;
+                        }
+                ).toList();
+        BookResponse bookResponse = new BookResponse();
+        bookResponse.setContent(listBookDTO);
+        bookResponse.setPageNumber(pageBooks.getNumber());
+        bookResponse.setPageSize(pageBooks.getSize());
+        bookResponse.setTotalElements(pageBooks.getTotalElements());
+        bookResponse.setTotalPages(pageBooks.getTotalPages());
+        bookResponse.setLastPage(pageBooks.isLast());
+        return bookResponse;
+    }
+
 }

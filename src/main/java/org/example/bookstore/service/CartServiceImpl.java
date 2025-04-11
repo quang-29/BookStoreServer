@@ -165,4 +165,37 @@ public class CartServiceImpl implements CartService {
         return true;
 
     }
-}
+
+    @Override
+    public CartDTO decreaseProductFromCart(UUID cartId, UUID bookId) {
+            Book book = bookRepository.findById(bookId)
+                    .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_FOUND));
+
+            Cart cart = cartRepository.findById(cartId)
+                    .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
+
+            CartItem cartItem = cartItemRepository.findCartItemByCartIdAndBookId(cartId, bookId);
+            if(cartItem.getQuantity() == 1){
+                deleteProductFromCart(cartId, bookId);
+            } else {
+                cartItem.setQuantity(cartItem.getQuantity() - 1);
+                cartItemRepository.save(cartItem);
+            }
+            CartDTO cartDTO = new CartDTO();
+            cartDTO.setCartId(cartId);
+            cartDTO.setTotalPrice(cart.getTotalPrice());
+            List<CartItemDTO> cartItemDTOS = new ArrayList<>();
+            cart.getCartItems().forEach(cartItem1 -> {
+                CartItemDTO cartItemDTO = new CartItemDTO();
+                cartItemDTO.setCartItemId(cartItem1.getId());
+                cartItemDTO.setQuantity(cartItem1.getQuantity());
+                cartItemDTO.setBook(modelMapper.map(cartItem1.getBook(), BookDTO.class));
+                cartItemDTO.setBookPrice(cartItem1.getBookPrice());
+                cartItemDTOS.add(cartItemDTO);
+            });
+            cartDTO.setCartItem(cartItemDTOS);
+            return cartDTO;
+
+        }
+    }
+

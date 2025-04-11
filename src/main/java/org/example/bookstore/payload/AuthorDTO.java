@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.example.bookstore.model.Book;
 
+import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 @Getter
@@ -16,10 +17,11 @@ import java.util.UUID;
 @Data
 public class AuthorDTO {
     private UUID id;
-    private String authorName;
-    private String bio;
+    private String name;
+    private String biography;
     private String email;
-    private String address;
-    private String phone;
-//    private Set<Book> books;
+    private Date birth_date;
+    private String country;
+    private String website;
+    private String image_path;
 }

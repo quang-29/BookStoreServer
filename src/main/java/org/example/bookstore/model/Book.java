@@ -7,10 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 @Setter
@@ -23,38 +20,8 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "book_title")
+    @Column(name = "title")
     private String title;
-
-    @Column(name = "book_description")
-    private String description;
-
-    @Column(name = "book_page")
-    private int page;
-
-    @Column(name = "reprint")
-    private int reprint;
-
-    @Column(name = "price", nullable = false)
-    private BigDecimal price;
-
-    @Column(name = "stock")
-    private Long stock;
-
-    @Column(name = "sold", nullable = false)
-    private Long sold;
-
-    @Column(name = "publisher", nullable = false)
-    private String publisher;
-
-    @Column(name = "ISBN", nullable = false)
-    private String isbn;
-
-    @Column(name = "language")
-    private String language;
-
-    @Column(name = "image_path")
-    private String imagePath;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -64,6 +31,44 @@ public class Book {
     @JoinColumn(name = "author_id")
     private Author author;
 
+    @Column(name = "price", nullable = false)
+    private BigDecimal price;
+
+
+    @Column(name = "average_rating")
+    private Double averageRating = 0.0;
+
+    @Column(name = "book_description")
+    private String description;
+
+    @Column(name = "language")
+    private String language;
+
+    @Column(name = "image_path")
+    private String imagePath;
+
+    @Column(name = "isbn", nullable = false)
+    private String isbn;
+
+    @Column(name = "page")
+    private int page;
+
+    @Column(name = "publisher", nullable = false)
+    private String publisher;
+
+    @Column(name = "reprint")
+    private int reprint;
+
+    @Column(name = "stock")
+    private Long stock;
+
+    @Column(name = "sold", nullable = false)
+    private Long sold;
+
+    @Column(name = "publishedDate", nullable = false)
+    private Date publishedDate;
+
+
     @OneToMany(mappedBy = "book")
     private List<Review> reviews;
 
@@ -72,9 +77,6 @@ public class Book {
 
     @ManyToMany(mappedBy = "likedBooks")
     private Set<User> likedByUsers = new HashSet<>();
-
-    @Column(name = "average_rating")
-    private Double averageRating = 0.0;
 
 
 }
