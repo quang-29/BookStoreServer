@@ -14,6 +14,7 @@ import java.util.UUID;
 @Setter
 public class PlaceOrderDTO {
 
+    @NotBlank
     private UUID cartId;
 
     @NotBlank

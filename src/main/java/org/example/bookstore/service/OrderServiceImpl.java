@@ -258,4 +258,14 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
         return "Confirm order successfully.";
     }
+
+    @Override
+    public Order getOrderById(UUID orderId) {
+        return orderRepository.findById(orderId).orElse(null);
+    }
+
+    @Override
+    public void savePayment(Payment payment) {
+        paymentRepository.save(payment);
+    }
 }

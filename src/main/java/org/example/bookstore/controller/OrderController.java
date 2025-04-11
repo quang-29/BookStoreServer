@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.example.bookstore.payload.OrderDTO;
 import org.example.bookstore.payload.order.PlaceOrderDTO;
 import org.example.bookstore.payload.response.DataResponse;
+import org.example.bookstore.payload.response.PlaceOrderResponse;
 import org.example.bookstore.service.Interface.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,11 +27,11 @@ public class OrderController {
     @PutMapping("/placeOrder")
     public ResponseEntity<DataResponse> placeOrder(PlaceOrderDTO placeOrderDTO, HttpServletRequest request) {
 
-        OrderDTO orderDTO = orderService.placeOrder(placeOrderDTO, request);
+        PlaceOrderResponse placeOrderResponse = orderService.placeOrder(placeOrderDTO, request);
         DataResponse dataResponse = DataResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Success")
-                .data(orderDTO)
+                .data(placeOrderResponse)
                 .status(HttpStatus.OK)
                 .timestamp(LocalDateTime.now())
                 .build();

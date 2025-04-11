@@ -1,6 +1,8 @@
 package org.example.bookstore.service.Interface;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.example.bookstore.model.Order;
+import org.example.bookstore.model.payment.Payment;
 import org.example.bookstore.payload.OrderDTO;
 import org.example.bookstore.payload.order.PlaceOrderDTO;
 import org.example.bookstore.payload.response.OrderResponse;
@@ -26,4 +28,9 @@ public interface OrderService {
     String cancelOrder(UUID orderId);
 
     String confirmOrder(UUID orderId);
+
+    Order getOrderById(UUID orderId);
+
+    void savePayment(Payment payment);
+
 }

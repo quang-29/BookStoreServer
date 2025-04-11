@@ -2,33 +2,39 @@ package org.example.bookstore.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.bookstore.payload.PaymentDTO;
+import org.example.bookstore.service.Interface.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/payment")
 public class PaymentController {
-    @Autowired
-    private PaymentService paymentService;
 
-    @GetMapping("/vn-pay")
-    public ResponseEntity<PaymentDTO> pay(HttpServletRequest request) {
-        PaymentDTO paymentDTO = paymentService.createVnPayPayment(request);
-        return new ResponseEntity<>(paymentDTO, HttpStatus.OK);
+    private final PaymentService paymentService;
+
+    public PaymentController(PaymentService paymentService) {
+        this.paymentService = paymentService;
     }
-    @GetMapping("/vn-pay-callback")
-    public ResponseEntity<PaymentDTO> payCallbackHandler(HttpServletRequest request) {
-        String status = request.getParameter("vnp_ResponseCode");
-        if (status.equals("00")) {
-            PaymentDTO paymentDTO = new PaymentDTO("00", "Success", "");
-            return new ResponseEntity<>(paymentDTO, HttpStatus.OK);
-        } else {
-            PaymentDTO paymentDTO = new PaymentDTO("00", "Failed", null);
-            return new ResponseEntity<>(paymentDTO, HttpStatus.OK);
-        }
+
+    @GetMapping("/payment_url")
+    public ResponseEntity<?> getPaymentUrl(@RequestParam UUID orderId,
+                                           HttpServletRequest request) {
+        return ResponseEntity.ok().body(Map.of(
+                "url", paymentService.getPaymentUrl(orderId, request)
+        ));
+    }
+
+    @PostMapping("/check")
+    public ResponseEntity<?> checkPayment(@RequestParam String gateway,
+                                          @RequestParam Map<String, String> params) {
+        boolean ok = paymentService.checkPayment(gateway, params);
+        return ResponseEntity.ok().body(Map.of(
+                "status", ok ? "success" : "failed"
+        ));
     }
 }
