@@ -3,13 +3,12 @@ package org.example.bookstore.enums;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum PaymentType {
-    COD("cash_on_delivery"),
-    BANK_TRANSFER("bank_transfer");
+public enum PaymentGateway {
+    VNPAY("vnpay");
 
     private final String value;
 
-    PaymentType(String value) {
+    PaymentGateway(String value) {
         this.value = value;
     }
 
@@ -19,12 +18,12 @@ public enum PaymentType {
     }
 
     @JsonCreator
-    public static PaymentType fromString(String value) {
-        for (PaymentType type : PaymentType.values()) {
+    public static PaymentGateway fromString(String value) {
+        for (PaymentGateway type : PaymentGateway.values()) {
             if (type.value.equalsIgnoreCase(value)) {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Invalid payment type: " + value);
+        throw new IllegalArgumentException("Invalid payment gateway: " + value);
     }
 }

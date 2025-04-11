@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.example.bookstore.model.payment.Payment;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,34 +36,16 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     private List<OrderItem> orderItems;
 
-    private LocalDate orderDate;
+    private LocalDate createAt;
 
-    @ManyToOne
+
+    @OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinColumn(name = "address_id")
+    private UserAddress userAddress;
+
+    @OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinColumn(name = "payment_id")
-    private PaymentType paymentMethod;
+    private Payment payment;
 
-    @ManyToOne
-    @JoinColumn(name = "delivery_id")
-    private DeliveryType deliveryMethod;
 
-    private BigDecimal totalPrice;
-
-    @Column(name = "shipping_price")
-    private BigDecimal shippingPrice;
-
-    private BigDecimal totalAmount;
-    @Column(name = "isPaid", nullable = false)
-    private int isPaid = 0;
-
-    @Column(name = "isDelivered", nullable = false)
-    private int isDelivered = 0;
-
-    @Column(name = "paidAt")
-    private Date paidAt = new Date();
-
-    @Column(name = "deliveryAt")
-    private Date deliveryAt = new Date();
-
-    @Column(name = "status")
-    private int orderStatus = 0;
 }

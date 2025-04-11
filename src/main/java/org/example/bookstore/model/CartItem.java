@@ -30,6 +30,7 @@ public class CartItem {
     private Book book;
 
     private Integer quantity;
-    private BigDecimal bookPrice;
+
+    private long bookPrice;
 
 }

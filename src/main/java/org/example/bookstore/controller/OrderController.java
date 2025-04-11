@@ -1,6 +1,8 @@
 package org.example.bookstore.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.example.bookstore.payload.OrderDTO;
+import org.example.bookstore.payload.order.PlaceOrderDTO;
 import org.example.bookstore.payload.response.DataResponse;
 import org.example.bookstore.service.Interface.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +24,9 @@ public class OrderController {
 
 
     @PutMapping("/placeOrder")
-    public ResponseEntity<DataResponse> placeOrder(@RequestParam UUID userId,
-                                                   @RequestParam UUID cartId,
-                                                   @RequestParam String paymentMethod,
-                                                   @RequestParam String deliveryMethod){
+    public ResponseEntity<DataResponse> placeOrder(PlaceOrderDTO placeOrderDTO, HttpServletRequest request) {
 
-        OrderDTO orderDTO = orderService.placeOrder(userId, cartId, paymentMethod, deliveryMethod);
+        OrderDTO orderDTO = orderService.placeOrder(placeOrderDTO, request);
         DataResponse dataResponse = DataResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("Success")

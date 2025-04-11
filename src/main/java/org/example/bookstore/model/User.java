@@ -43,8 +43,9 @@ public class User {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "address")
-    private String address;
+    @Column(name = "awatar")
+    private String avatarUrl;
+
 
     @Size(min = 10, max = 10, message = "Mobile Number must be exactly 10 digits long")
     @Pattern(regexp = "^\\d{10}$", message = "Mobile Number must contain only Numbers")

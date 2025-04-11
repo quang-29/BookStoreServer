@@ -2,8 +2,6 @@ package org.example.bookstore.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.bookstore.payload.PaymentDTO;
-import org.example.bookstore.payload.response.DataResponse;
-import org.example.bookstore.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

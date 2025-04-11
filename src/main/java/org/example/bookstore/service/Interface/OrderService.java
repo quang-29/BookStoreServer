@@ -1,7 +1,10 @@
 package org.example.bookstore.service.Interface;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.example.bookstore.payload.OrderDTO;
+import org.example.bookstore.payload.order.PlaceOrderDTO;
 import org.example.bookstore.payload.response.OrderResponse;
+import org.example.bookstore.payload.response.PlaceOrderResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,7 +13,7 @@ import java.util.UUID;
 
 public interface OrderService {
 
-    OrderDTO placeOrder(UUID userId, UUID cartId, String paymentMethod, String deliveryMethod);
+    PlaceOrderResponse placeOrder(PlaceOrderDTO placeOrderDTO, HttpServletRequest request);
 
     OrderDTO getOrder(UUID orderId);
 
