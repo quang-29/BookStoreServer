@@ -7,7 +7,10 @@ import org.example.bookstore.enums.PaymentStatus;
 import org.example.bookstore.enums.PaymentType;
 import org.example.bookstore.exception.AppException;
 import org.example.bookstore.model.*;
+import org.example.bookstore.model.address.Address;
 import org.example.bookstore.model.payment.Payment;
+import org.example.bookstore.model.shipment.BasicShippingOrderInfo;
+import org.example.bookstore.model.shipment.ShipmentInfo;
 import org.example.bookstore.payload.Note;
 import org.example.bookstore.payload.OrderDTO;
 import org.example.bookstore.payload.OrderItemDTO;
@@ -18,6 +21,7 @@ import org.example.bookstore.service.Interface.CartService;
 import org.example.bookstore.service.Interface.OrderService;
 import org.example.bookstore.service.Interface.UserAddressService;
 import org.example.bookstore.service.firebase.FirebaseMessagingService;
+import org.example.bookstore.service.shipment.GHNService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +65,8 @@ public class OrderServiceImpl implements OrderService {
 
     private UserAddressRepository userAddressRepository;
 
+    private GHNService ghnService;
+
     private Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
     @Autowired
     private UserAddressService userAddressService;
@@ -69,11 +75,7 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
-    public PlaceOrderResponse placeOrder(PlaceOrderDTO placeOrderDTO, HttpServletRequest httpServletRequest) {
-        // Validate input
-        if (placeOrderDTO.getTotalPrice() < 0 || placeOrderDTO.getShippingFee() < 0) {
-            throw new AppException(ErrorCode.INVALID_PRICE);
-        }
+    public PlaceOrderResponse placeOrder(PlaceOrderDTO placeOrderDTO, HttpServletRequest httpServletRequest) throws Exception {
 
         Cart cart = cartRepository.findById(placeOrderDTO.getCartId())
                 .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
@@ -89,14 +91,9 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // Calculate total price from cart items
-        BigDecimal calculatedTotalPrice = cartItems.stream()
+        BigDecimal allBookPrice = cartItems.stream()
                 .map(item -> BigDecimal.valueOf(item.getBookPrice()).multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        // Validate total price matches
-        if (calculatedTotalPrice.compareTo(BigDecimal.valueOf(placeOrderDTO.getTotalPrice())) != 0) {
-            throw new AppException(ErrorCode.PRICE_MISMATCH);
-        }
 
         List<UserAddress> userAddressList = userAddressService.getAddressListByUser(username);
         UserAddress addressTo = userAddressList.stream()
@@ -104,7 +101,17 @@ public class OrderServiceImpl implements OrderService {
                 .findFirst()
                 .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
 
-        BigDecimal totalPay = calculatedTotalPrice.add(BigDecimal.valueOf(placeOrderDTO.getShippingFee()));
+        ShipmentInfo shipmentInfo = ShipmentInfo.builder()
+                .from(new ShopAddress())
+                .to(addressTo)
+                .weight(placeOrderDTO.getWeight())
+                .build();
+
+        BasicShippingOrderInfo basicShippingOrderInfo =ghnService.calculateShipmentFee(shipmentInfo);
+        BigDecimal shippingFee = BigDecimal.valueOf(basicShippingOrderInfo.getFee());
+
+        BigDecimal totalPay = allBookPrice.add(shippingFee);
+
         PaymentType paymentType = PaymentType.fromString(placeOrderDTO.getPaymentType());
 
         if(paymentType == null) {

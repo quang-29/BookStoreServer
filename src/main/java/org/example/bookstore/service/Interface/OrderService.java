@@ -15,7 +15,7 @@ import java.util.UUID;
 
 public interface OrderService {
 
-    PlaceOrderResponse placeOrder(PlaceOrderDTO placeOrderDTO, HttpServletRequest request);
+    PlaceOrderResponse placeOrder(PlaceOrderDTO placeOrderDTO, HttpServletRequest request) throws Exception;
 
     OrderDTO getOrder(UUID orderId);
 

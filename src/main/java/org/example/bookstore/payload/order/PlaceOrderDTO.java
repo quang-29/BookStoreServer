@@ -23,9 +23,7 @@ public class PlaceOrderDTO {
     @NotBlank
     private String paymentType;
 
-    private int shippingFee;
-
-    private int totalPrice;
+    private int weight;
 
 
 }

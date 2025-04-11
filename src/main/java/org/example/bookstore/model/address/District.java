@@ -2,7 +2,9 @@ package org.example.bookstore.model.address;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 
@@ -10,10 +12,11 @@ import org.springframework.data.annotation.Id;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class District {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
     private int provinceId;
