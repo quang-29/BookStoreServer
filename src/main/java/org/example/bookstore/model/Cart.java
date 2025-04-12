@@ -29,7 +29,7 @@ public class Cart {
     @OneToMany(mappedBy = "cart")
     private List<CartItem> cartItems;
 
-    private BigDecimal totalPrice = BigDecimal.valueOf(0.0);
+    private long totalPrice = 0;
 
 
 }

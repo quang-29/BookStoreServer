@@ -97,11 +97,12 @@ public class CartServiceImpl implements CartService {
     }
 
     private void updateCartTotalPrice(Cart cart) {
-        BigDecimal totalPrice = cart.getCartItems().stream()
-                .map(cartItem -> cartItem.getBookPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        long totalPrice = cart.getCartItems().stream()
+                .mapToLong(cartItem -> cartItem.getBookPrice() * cartItem.getQuantity())
+                .sum();
         cart.setTotalPrice(totalPrice);
     }
+
 
 
     @Override
@@ -130,7 +131,7 @@ public class CartServiceImpl implements CartService {
         cartDTO.setTotalPrice(cart.getTotalPrice());
         if(cart.getCartItems().size() == 0){
             logger.info("Empty cart!");
-            cartDTO.setTotalPrice(BigDecimal.ZERO);
+            cartDTO.setTotalPrice(0);
         }
         List<CartItemDTO> cartItemDTOS = new ArrayList<>();
         cart.getCartItems().forEach(cartItem -> {
@@ -157,7 +158,7 @@ public class CartServiceImpl implements CartService {
             throw new AppException(ErrorCode.CART_NO_FOUND_BOOK);
         }
 
-        cart.setTotalPrice(cart.getTotalPrice().subtract(cartItem.getBookPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()))));
+        cart.setTotalPrice((cart.getTotalPrice()-cartItem.getBookPrice())*cartItem.getQuantity());
         cartRepository.save(cart);
         Book book = cartItem.getBook();
         book.setStock(book.getStock() + cartItem.getQuantity());

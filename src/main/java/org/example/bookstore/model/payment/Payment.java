@@ -9,7 +9,7 @@ import lombok.Setter;
 import org.example.bookstore.enums.PaymentGateway;
 import org.example.bookstore.enums.PaymentStatus;
 import org.example.bookstore.enums.PaymentType;
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
 
 import java.util.Date;
 

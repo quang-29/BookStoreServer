@@ -92,7 +92,6 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(userUpdate.getFirstName());
         user.setLastName(userUpdate.getLastName());
         user.setPhoneNumber(userUpdate.getPhoneNumber());
-        user.setAddress(userUpdate.getAddress());
         userRepository.save(user);
         UserDTO userDTO = modelMapper.map(user, UserDTO.class);
         CartDTO cart = modelMapper.map(user.getCart(), CartDTO.class);

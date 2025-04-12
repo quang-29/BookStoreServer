@@ -44,9 +44,10 @@ public enum ErrorCode {
     REVIEW_ALREADY_EXISTS(729,"You already reviewed the book",HttpStatus.BAD_REQUEST),
     REVIEW_ERROR_DELETE(730,"You have not permission to delete the review",HttpStatus.BAD_REQUEST),
     TOKEN_EXPIRED(731,"Token expired",HttpStatus.BAD_REQUEST),
-    INVALID_PRICE(400, "Invalid price value"),
-    PRICE_MISMATCH(400, "Calculated price does not match provided price"),
-    ADDRESS_NOT_FOUND(404, "Address not found"),
+    INVALID_PRICE(400, "Invalid price value",HttpStatus.BAD_REQUEST),
+    PRICE_MISMATCH(400, "Calculated price does not match provided price",HttpStatus.BAD_REQUEST),
+    ADDRESS_NOT_FOUND(404, "Address not found",HttpStatus.BAD_REQUEST),
+    INVALID_ADDRESS(400, "Address ID cannot be null.",HttpStatus.BAD_REQUEST),
 
     ;
 

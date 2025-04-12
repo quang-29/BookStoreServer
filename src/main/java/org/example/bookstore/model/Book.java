@@ -32,7 +32,7 @@ public class Book {
     private Author author;
 
     @Column(name = "price", nullable = false)
-    private BigDecimal price;
+    private long price;
 
 
     @Column(name = "average_rating")

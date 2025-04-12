@@ -17,6 +17,6 @@ public class CartDTO {
 
     private UUID cartId;
     private List<CartItemDTO> cartItem = new ArrayList<>();
-    private BigDecimal totalPrice;
+    private long totalPrice;
 
 }

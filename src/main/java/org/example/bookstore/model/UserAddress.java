@@ -1,13 +1,12 @@
 package org.example.bookstore.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import org.checkerframework.checker.units.qual.A;
 import org.example.bookstore.model.address.Address;
-import org.springframework.data.annotation.Id;
+
+import java.util.UUID;
+
 
 @Getter
 @Setter
@@ -18,8 +17,8 @@ import org.springframework.data.annotation.Id;
 @Table(name = "user_address")
 public class UserAddress extends Address {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     private String username;
 
@@ -27,5 +26,5 @@ public class UserAddress extends Address {
 
     private String phoneNumber;
 
-    private boolean primary;
+    private boolean isPrimary;
 }

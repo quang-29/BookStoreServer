@@ -36,16 +36,19 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     private List<OrderItem> orderItems;
 
-    private LocalDate createAt;
+    private Date createAt;
 
 
-    @OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinColumn(name = "address_id")
     private UserAddress userAddress;
 
-    @OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinColumn(name = "payment_id")
     private Payment payment;
+
+
+
 
 
 }

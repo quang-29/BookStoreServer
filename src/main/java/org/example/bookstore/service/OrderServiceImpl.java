@@ -49,29 +49,41 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private PaymentRepository paymentRepository;
+
     @Autowired
     private OrderRepository orderRepository;
+
     @Autowired
     private CartService cartService;
 
     @Autowired
     private OrderItemRepository orderItemRepository;
+
     @Autowired
     private BookRepository bookRepository;
+
     @Autowired
     private DeliveryRepository deliveryRepository;
 
     private FirebaseMessagingService firebaseMessagingService;
 
+    @Autowired
     private UserAddressRepository userAddressRepository;
 
+    @Autowired
     private GHNService ghnService;
 
     private Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
-    @Autowired
-    private UserAddressService userAddressService;
+
+    private final UserAddressService userAddressService;
+
+
     @Autowired
     private VNPayService vnPayService;
+
+    public OrderServiceImpl(UserAddressService userAddressService) {
+        this.userAddressService = userAddressService;
+    }
 
 
     @Override
@@ -90,14 +102,16 @@ public class OrderServiceImpl implements OrderService {
             throw new AppException(ErrorCode.ORDER_ERROR);
         }
 
-        // Calculate total price from cart items
-        BigDecimal allBookPrice = cartItems.stream()
-                .map(item -> BigDecimal.valueOf(item.getBookPrice()).multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        long allBookPrice = cartItems.stream()
+                .mapToLong(item -> item.getBookPrice() * item.getQuantity())
+                .sum();
 
         List<UserAddress> userAddressList = userAddressService.getAddressListByUser(username);
+        if (placeOrderDTO.getAddressId() == null) {
+            throw new AppException(ErrorCode.INVALID_ADDRESS);
+        }
         UserAddress addressTo = userAddressList.stream()
-                .filter(address -> address.getId() == placeOrderDTO.getAddressId())
+                .filter(address -> address.getId().equals(placeOrderDTO.getAddressId()))
                 .findFirst()
                 .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
 
@@ -107,10 +121,10 @@ public class OrderServiceImpl implements OrderService {
                 .weight(placeOrderDTO.getWeight())
                 .build();
 
-        BasicShippingOrderInfo basicShippingOrderInfo =ghnService.calculateShipmentFee(shipmentInfo);
-        BigDecimal shippingFee = BigDecimal.valueOf(basicShippingOrderInfo.getFee());
+        BasicShippingOrderInfo basicShippingOrderInfo = ghnService.calculateShipmentFee(shipmentInfo);
+        long shippingFee = basicShippingOrderInfo.getFee();
 
-        BigDecimal totalPay = allBookPrice.add(shippingFee);
+        long totalPay = allBookPrice + shippingFee;
 
         PaymentType paymentType = PaymentType.fromString(placeOrderDTO.getPaymentType());
 
@@ -121,6 +135,7 @@ public class OrderServiceImpl implements OrderService {
         Payment payment = new Payment();
         payment.setType(paymentType);
         payment.setCreatedAt(new Date());
+        payment.setAmount(totalPay);
         if(payment.getType() != PaymentType.COD) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(payment.getCreatedAt());
@@ -131,7 +146,7 @@ public class OrderServiceImpl implements OrderService {
         else payment.setStatus(PaymentStatus.COD);
 
         Order order = new Order();
-        order.setCreateAt(LocalDate.now());
+        order.setCreateAt(new Date());
         order.setUser(user);
         order.setEmail(user.getEmail());
         order.setUserAddress(addressTo);
@@ -159,21 +174,21 @@ public class OrderServiceImpl implements OrderService {
             book.setSold(book.getSold() + quantity);
             bookRepository.save(book);
         }
-        Notification notification = Notification.builder()
-                .context("Dat hang thanh cong")
-                .body(String.format("Đơn hàng với id %s đã được tạo thành công", order.getId().toString()))
-                .users(Collections.singletonList(user))
-                .referenceId(order.getId().toString())
-                .title("Đã tạo đơn hàng")
-                .build();
-        user.getNotifications().add(notification);
-        userRepository.save(user);
-        try{
-            firebaseMessagingService
-                    .sendNotification(new Note("Context.ORDER", "ORDER_CREATE_SUCCESS", order.getId().toString()),user.getDeviceToken());
-        } catch (FirebaseMessagingException e) {
-            logger.error(e.getMessage());
-        }
+//        Notification notification = Notification.builder()
+//                .context("Dat hang thanh cong")
+//                .body(String.format("Đơn hàng với id %s đã được tạo thành công", order.getId().toString()))
+//                .users(Collections.singletonList(user))
+//                .referenceId(order.getId().toString())
+//                .title("Đã tạo đơn hàng")
+//                .build();
+//        user.getNotifications().add(notification);
+//        userRepository.save(user);
+//        try{
+//            firebaseMessagingService
+//                    .sendNotification(new Note("Context.ORDER", "ORDER_CREATE_SUCCESS", order.getId().toString()),user.getDeviceToken());
+//        } catch (FirebaseMessagingException e) {
+//            logger.error(e.getMessage());
+//        }
         PlaceOrderResponse placeOrderResponse = new PlaceOrderResponse();
         placeOrderResponse.setOrderId(order.getId());
         if(paymentType == PaymentType.BANK_TRANSFER){

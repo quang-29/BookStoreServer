@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface UserAddressService {
 
-    public List<UserAddress> getAddressListByUser(String username);
+    List<UserAddress> getAddressListByUser(String username);
 
-    public void save(UserAddress userAddress);
+    void save(UserAddress userAddress);
 
 
 }

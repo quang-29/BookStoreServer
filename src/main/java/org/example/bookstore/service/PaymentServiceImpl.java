@@ -11,6 +11,7 @@ import org.example.bookstore.service.Interface.OrderService;
 import org.example.bookstore.service.Interface.PaymentService;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 
@@ -34,7 +35,8 @@ public class PaymentServiceImpl implements PaymentService {
         if (paymentGateway == PaymentGateway.VNPAY) {
             String txnRef = params.get("vnp_TxnRef");
             String[] p = txnRef.split("-");
-            Order order = orderService.getOrderById(UUID.fromString(p[0]));
+            String uuidStr = String.join("-", Arrays.copyOfRange(p, 0, 5)); // Lấy đúng UUID
+            Order order = orderService.getOrderById(UUID.fromString(uuidStr));
             if (order == null)
                 throw new AppException(ErrorCode.ORDER_NOT_FOUND);
             boolean ok = vnPayService.checkPayment(order, params);

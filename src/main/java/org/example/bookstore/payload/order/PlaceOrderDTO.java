@@ -18,7 +18,7 @@ public class PlaceOrderDTO {
     private UUID cartId;
 
     @NotBlank
-    private long addressId;
+    private UUID addressId;
 
     @NotBlank
     private String paymentType;

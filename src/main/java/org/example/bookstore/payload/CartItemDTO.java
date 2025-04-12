@@ -17,5 +17,5 @@ public class CartItemDTO {
     private UUID cartItemId;
     private BookDTO book;
     private Integer quantity;
-    private BigDecimal bookPrice;
+    private long bookPrice;
 }

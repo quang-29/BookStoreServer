@@ -27,6 +27,5 @@ public class DeliveryType {
     @Column(name = "name", nullable = false)
     private String deliveryName;
 
-    @OneToMany(mappedBy = "deliveryMethod")
-    private List<Order> orders;
+
 }

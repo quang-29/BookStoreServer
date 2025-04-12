@@ -25,7 +25,7 @@ public class OrderController {
 
 
     @PutMapping("/placeOrder")
-    public ResponseEntity<DataResponse> placeOrder(PlaceOrderDTO placeOrderDTO, HttpServletRequest request) {
+    public ResponseEntity<DataResponse> placeOrder(@RequestBody PlaceOrderDTO placeOrderDTO, HttpServletRequest request) throws Exception {
 
         PlaceOrderResponse placeOrderResponse = orderService.placeOrder(placeOrderDTO, request);
         DataResponse dataResponse = DataResponse.builder()
