@@ -3,6 +3,7 @@ package org.example.bookstore.service;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.bookstore.enums.ErrorCode;
+import org.example.bookstore.enums.NotificationScope;
 import org.example.bookstore.enums.PaymentStatus;
 import org.example.bookstore.enums.PaymentType;
 import org.example.bookstore.exception.AppException;
@@ -18,6 +19,7 @@ import org.example.bookstore.payload.order.PlaceOrderDTO;
 import org.example.bookstore.payload.response.PlaceOrderResponse;
 import org.example.bookstore.repository.*;
 import org.example.bookstore.service.Interface.CartService;
+import org.example.bookstore.service.Interface.NotificationService;
 import org.example.bookstore.service.Interface.OrderService;
 import org.example.bookstore.service.Interface.UserAddressService;
 import org.example.bookstore.service.firebase.FirebaseMessagingService;
@@ -80,6 +82,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private VNPayService vnPayService;
+    @Autowired
+    private NotificationRepository notificationRepository;
+    @Autowired
+    private NotificationService notificationService;
 
     public OrderServiceImpl(UserAddressService userAddressService) {
         this.userAddressService = userAddressService;
@@ -148,7 +154,6 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         order.setCreateAt(new Date());
         order.setUser(user);
-        order.setEmail(user.getEmail());
         order.setUserAddress(addressTo);
         order.setPayment(payment);
         orderRepository.save(order);
@@ -174,6 +179,20 @@ public class OrderServiceImpl implements OrderService {
             book.setSold(book.getSold() + quantity);
             bookRepository.save(book);
         }
+
+        Notifications notifications = new Notifications();
+        notifications.setReceiver(user);
+        notifications.setRead(false);
+        notifications.setContent("Đơn hàng %s đã được tạo thành công"+ order.getId());
+        notifications.setCreatedAt(new Date());
+        notifications.setItemCount(orderItems.size());
+        notifications.setScope(NotificationScope.SHOP);
+        notificationRepository.save(notifications);
+        logger.info("Notifications", notifications);
+        notificationService.sendNotification(notifications);
+
+
+
 //        Notification notification = Notification.builder()
 //                .context("Dat hang thanh cong")
 //                .body(String.format("Đơn hàng với id %s đã được tạo thành công", order.getId().toString()))

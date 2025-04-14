@@ -1,6 +1,7 @@
 package org.example.bookstore.service;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.example.bookstore.enums.ErrorCode;
 import org.example.bookstore.enums.PaymentGateway;
 import org.example.bookstore.enums.PaymentStatus;
@@ -9,16 +10,21 @@ import org.example.bookstore.model.Order;
 import org.example.bookstore.model.payment.Payment;
 import org.example.bookstore.service.Interface.OrderService;
 import org.example.bookstore.service.Interface.PaymentService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class PaymentServiceImpl implements PaymentService {
 
+    @Autowired
     private OrderService orderService;
+
+    @Autowired
     private  VNPayService vnPayService;
 
     @Override
@@ -36,6 +42,7 @@ public class PaymentServiceImpl implements PaymentService {
             String txnRef = params.get("vnp_TxnRef");
             String[] p = txnRef.split("-");
             String uuidStr = String.join("-", Arrays.copyOfRange(p, 0, 5)); // Lấy đúng UUID
+            log.info("Check id order txn ref: {}", uuidStr);
             Order order = orderService.getOrderById(UUID.fromString(uuidStr));
             if (order == null)
                 throw new AppException(ErrorCode.ORDER_NOT_FOUND);

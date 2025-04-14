@@ -1,24 +1,24 @@
 package org.example.bookstore.service;
 
 import jakarta.persistence.criteria.Join;
-import org.example.bookstore.model.Notification;
+import org.example.bookstore.model.Notifications;
 import org.example.bookstore.model.User;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.UUID;
 
 public class NotificationSpecification {
-    public static Specification<Notification> hasUserId(String userId) {
+    public static Specification<Notifications> hasUserId(String userId) {
         return (root, query, criteriaBuilder) -> {
             if (userId == null || userId.isEmpty()) {
                 return criteriaBuilder.conjunction();
             }
-            Join<Notification, User> usersJoin = root.join("users");
+            Join<Notifications, User> usersJoin = root.join("users");
             return criteriaBuilder.equal(usersJoin.get("id"), UUID.fromString(userId));
         };
     }
 
-    public static Specification<Notification> searchByKeyword(String search) {
+    public static Specification<Notifications> searchByKeyword(String search) {
         return (root, query, criteriaBuilder) -> {
             if (search == null || search.isEmpty()) {
                 return criteriaBuilder.conjunction();
@@ -30,7 +30,7 @@ public class NotificationSpecification {
         };
     }
 
-    public static Specification<Notification> filtersNotification(String userId, String search){
+    public static Specification<Notifications> filtersNotification(String userId, String search){
         return Specification.where(hasUserId(userId))
                 .and(searchByKeyword(search));
     }

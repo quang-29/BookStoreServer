@@ -1,113 +1,139 @@
 package org.example.bookstore.service;
 
 import jakarta.transaction.Transactional;
-import lombok.Setter;
-import org.example.bookstore.model.Notification;
+import org.example.bookstore.enums.ErrorCode;
+import org.example.bookstore.enums.NotificationScope;
+import org.example.bookstore.exception.AppException;
+import org.example.bookstore.model.Notifications;
 import org.example.bookstore.model.User;
-import org.example.bookstore.payload.response.APIResponse;
-import org.example.bookstore.payload.response.PagingResponse;
+import org.example.bookstore.payload.NotificationsDTO;
+import org.example.bookstore.payload.response.OffsetResponse;
 import org.example.bookstore.repository.NotificationRepository;
 import org.example.bookstore.repository.UserRepository;
-import org.example.bookstore.security.JwtTokenProvider;
 import org.example.bookstore.service.Interface.NotificationService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.ScrollPosition;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
-    @Autowired
-    private  NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final ModelMapper modelMapper;
 
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
-
-    @Autowired
-    private UserRepository userRepository;
-
-
-    @Override
-    public PagingResponse<List<Notification>> getNotifications(Map<Object, String> filters) {
-        int page = Integer.parseInt(filters.getOrDefault("page", "-1"));
-        int limit = Integer.parseInt(filters.getOrDefault("limit", "-1"));
-        String order = filters.get("order");
-        if (page == -1 && limit == -1) {
-            Specification<Notification> notificationSpecification = NotificationSpecification.filtersNotification(filters.get("userId"), filters.get("search"));
-            List<Notification> notifications = notificationRepository.findAll(notificationSpecification, Sort.by(Sort.Direction.DESC, "createdAt"));
-            int totalNew = (int) notifications.stream()
-                    .filter(notification -> notification.getIsRead() == 0)
-                    .count();
-            return new PagingResponse<>(notifications, "NOTIFICATION_GET_LIST_SUCCESS", 1, (long) notifications.size(), totalNew);
-        }
-        page = Math.max(Integer.parseInt(filters.getOrDefault("page", "-1")), 1) - 1;
-        Pageable pageable = PageRequest.of(page, limit, Sort.by("createdAt").descending());
-        pageable = getPageable(pageable, page, limit, order);
-        Specification<Notification> notificationSpecification = NotificationSpecification.filtersNotification(filters.get("userId"), filters.get("search"));
-        Page<Notification> notifications = notificationRepository.findAll(notificationSpecification, pageable);
-        int totalNew = (int) notifications.getContent().stream()
-                .filter(notification -> notification.getIsRead() == 0)
-                .count();
-        return new PagingResponse<>(notifications.getContent(), "NOTIFICATION_GET_LIST_SUCCESS", notifications.getTotalPages(), notifications.getTotalElements(), totalNew);
+    public NotificationServiceImpl(NotificationRepository notificationRepository,
+                                   SimpMessagingTemplate simpMessagingTemplate,
+                                   UserRepository userRepository, ModelMapper modelMapper) {
+        this.notificationRepository = notificationRepository;
+        this.simpMessagingTemplate = simpMessagingTemplate;
+        this.userRepository = userRepository;
+        this.modelMapper = modelMapper;
     }
 
     @Override
-    @Transactional
-    public APIResponse<Notification> markReadNotification(String notificationId) {
-        Notification notification = notificationRepository.findById(UUID.fromString(notificationId))
-                .orElseThrow(() -> new RuntimeException("NOTIFICATION_NOT_FOUND"));
-        notification.setIsRead(1);
+    public Notifications save(Notifications notification) {
+        return notificationRepository.save(notification);
+    }
+
+    @Override
+    public void saveAll(List<Notifications> notifications) {
+        notificationRepository.saveAll(notifications);
+    }
+
+    @Override
+    public void sendNotification(Notifications notification) {
         notificationRepository.save(notification);
-        return new APIResponse<>(notification, "NOTIFICATION_READ");
+        simpMessagingTemplate.convertAndSendToUser(
+                notification.getReceiver().getUsername(),
+                "/notify",
+                toDTO(notification)
+        );
+    }
+
+    @Override
+    public void sendAllNotis(List<Notifications> notiList) {
+        notificationRepository.saveAll(notiList);
+        for (Notifications noti : notiList) {
+            simpMessagingTemplate.convertAndSendToUser(
+                    noti.getReceiver().getUsername(),
+                    "/notify",
+                    toDTO(noti)
+            );
+        }
+    }
+
+    @Override
+    public Notifications getNotificationById(UUID id) {
+        return notificationRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.NOTIFICATION_NOT_FOUND));
+    }
+
+    @Override
+    public List<Notifications> getList(User receiver, NotificationScope scope, int offset, int limit) {
+        return notificationRepository.findLastByReceiverAndScopeOrderByCreatedAtDesc(
+                        receiver,
+                        scope,
+                        offset > 0 ? ScrollPosition.offset(offset - 1) : ScrollPosition.offset(),
+                        Limit.of(limit))
+                .stream().toList();
     }
 
     @Override
     @Transactional
-    public APIResponse<Boolean> deleteNotification(String notificationId) {
-        Notification notification = notificationRepository.findById(UUID.fromString(notificationId))
-                .orElseThrow(() -> new RuntimeException("NOTIFICATION_NOT_FOUND"));
-        for (User user : notification.getUsers()) {
-            user.getNotifications().remove(notification);
+    public void markAsRead(UUID notiId) {
+        Notifications notification = notificationRepository.findById(notiId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOTIFICATION_NOT_FOUND));
+
+        User user = getCurrentUser();
+        if (!notification.getReceiver().equals(user)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
         }
-        userRepository.saveAll(notification.getUsers());
-        notification.getUsers().clear();
-        notificationRepository.delete(notification);
-        return new APIResponse<>(true, "NOTIFICATION_DELETE_SUCCESS");
+
+        notification.setRead(true);
+        notificationRepository.save(notification);
     }
 
     @Override
     @Transactional
-    public APIResponse<Boolean> readAllNotification(String token) {
-
-        User user = jwtTokenProvider.getUser(token);
-        List<Notification> notificationList = user.getNotifications();
-        for(Notification notification : notificationList){
-            notification.setIsRead(1);
+    public void markAllAsRead() {
+        User user = getCurrentUser();
+        List<Notifications> notifications = notificationRepository.findAllByIsReadAndReceiver(false, user);
+        for (Notifications notification : notifications) {
+            notification.setRead(true);
         }
-        notificationRepository.saveAll(notificationList);
-        return new APIResponse<>(true, "NOTIFICATION_READ_ALL");
+        notificationRepository.saveAll(notifications);
     }
 
-    private Pageable getPageable(Pageable pageable, int page, int limit, String order) {
-        if (StringUtils.hasText(order)) {
-            String[] orderParams = order.split(" ");
-            if (orderParams.length == 2) {
-                Sort.Direction direction = orderParams[1].equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
-                pageable = PageRequest.of(page, limit, Sort.by(new Sort.Order(direction, orderParams[0])));
-            }
-        }
-        return pageable;
+    @Override
+    public int countUnread() {
+        User user = getCurrentUser();
+        return notificationRepository.countByReceiverAndIsRead(user, false);
     }
 
+    @Override
+    public OffsetResponse<NotificationsDTO> getList(NotificationScope scope, int offset, int limit) {
+        User receiver = getCurrentUser();
+        List<Notifications> notiList = getList(receiver, scope, offset, limit);
+        List<NotificationsDTO> dtoList = notiList.stream().map(this::toDTO).toList();
+        return new OffsetResponse<>(dtoList, offset + notiList.size());
+    }
 
+    private User getCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    private NotificationsDTO toDTO(Notifications notification) {
+
+        return modelMapper.map(notification, NotificationsDTO.class);
+    }
 }

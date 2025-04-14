@@ -48,6 +48,7 @@ public enum ErrorCode {
     PRICE_MISMATCH(400, "Calculated price does not match provided price",HttpStatus.BAD_REQUEST),
     ADDRESS_NOT_FOUND(404, "Address not found",HttpStatus.BAD_REQUEST),
     INVALID_ADDRESS(400, "Address ID cannot be null.",HttpStatus.BAD_REQUEST),
+    NOTIFICATION_NOT_FOUND(404, "Notification not found",HttpStatus.BAD_REQUEST),
 
     ;
 

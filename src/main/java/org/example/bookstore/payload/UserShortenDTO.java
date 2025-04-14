@@ -7,11 +7,10 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UserOrderDTO {
+public class UserShortenDTO {
     private UUID userId;
-    private String lastName;
+    private String username;
     private String phoneNumber;
     private String email;
-    private String address;
 
 }

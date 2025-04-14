@@ -10,6 +10,7 @@ import org.example.bookstore.model.User;
 import org.example.bookstore.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,6 +35,10 @@ public class JwtTokenProvider {
 
     @Value("${app.jwt.expiration-in-ms}")
     private int jwtExpirationInMs;
+
+    @Value("${app.jwt.refresh-expiration-in-ms}")
+    private int refreshExpirationInMs;
+
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
@@ -71,6 +76,32 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    public String createRefreshToken(Authentication authentication) {
+        String username = authentication.getName();
+        User user = userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + refreshExpirationInMs);
+
+        UUID refreshTokenId = UUID.randomUUID();
+
+        return Jwts.builder()
+                .setSubject(userDetails.getUsername())
+                .claim("id", refreshTokenId)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .setHeaderParam("typ", "JWT")
+                .claim("type", "refresh")
+                .compact();
+    }
+
+
+    public UsernamePasswordAuthenticationToken getAuthentication(String token) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(getUsername(token));
+        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+    }
 
     public String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");

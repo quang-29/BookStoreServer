@@ -25,10 +25,6 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Email
-    @Column(nullable = false)
-    private String email;
-
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

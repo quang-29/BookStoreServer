@@ -48,7 +48,8 @@ public class SecurityConfig {
             "/api/review/**",
             "/api/v1/cart/**",
             "/api/payment/vn-pay/**",
-            "/api/payment/vn-pay-callback/**"
+            "/api/payment/vn-pay-callback/**",
+            "/api/payment/**",
     };
 
     @Autowired

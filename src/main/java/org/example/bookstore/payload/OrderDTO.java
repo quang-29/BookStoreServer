@@ -3,10 +3,15 @@ package org.example.bookstore.payload;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import org.example.bookstore.model.UserAddress;
+import org.example.bookstore.model.payment.Payment;
+import org.example.bookstore.payload.payment.PaymentDTO;
+import org.example.bookstore.payload.userAddress.UserAddressDTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,13 +23,9 @@ import java.util.UUID;
 public class OrderDTO {
 
     private UUID orderId;
-    private UserOrderDTO user;
+//    private UserOrderDTO user;
     private List<OrderItemDTO> orderItem = new ArrayList<>();
-    private LocalDate orderDate;
-    private String paymentMethod;
-    private String deliveryMethod;
-    private BigDecimal totalPrice;
-    private BigDecimal shippingPrice;
-    private BigDecimal totalAmount;
-    private int orderStatus;
+    private Date createAt;
+    private UserAddressDTO userAddress;
+    private PaymentDTO payment;
 }

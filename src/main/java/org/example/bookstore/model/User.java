@@ -43,8 +43,9 @@ public class User {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "awatar")
+    @Column(name = "avatar")
     private String avatarUrl;
+
 
 
     @Size(min = 10, max = 10, message = "Mobile Number must be exactly 10 digits long")
@@ -79,13 +80,7 @@ public class User {
     )
     private Set<Book> likedBooks = new HashSet<>();
 
-    @JsonIgnore
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "user_notifications",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "notification_id")
-    )
-    private List<Notification> notifications = new ArrayList<>();
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notifications> notifications = new ArrayList<>();
 
 }

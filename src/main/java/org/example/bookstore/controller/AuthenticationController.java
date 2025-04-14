@@ -53,11 +53,12 @@ public class AuthenticationController {
                     )
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtTokenProvider.createToken(authentication);
+            String accessToken = jwtTokenProvider.createToken(authentication);
+            String refreshedToken = jwtTokenProvider.createRefreshToken(authentication);
             DataResponse dataResponse = DataResponse.builder()
                     .code(HttpStatus.OK.value())
                     .message("Dang nhap thanh cong")
-                    .data(new AuthenticationResponse(jwt))
+                    .data(new AuthenticationResponse(accessToken,refreshedToken))
                     .status(HttpStatus.OK)
                     .timestamp(LocalDateTime.now())
                     .build();

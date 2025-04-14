@@ -39,7 +39,7 @@ public class OrderController {
     }
 
     @GetMapping("getOrderByUserId/{userId}")
-    @PreAuthorize("#userId.toString() == authentication.principal.id or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DataResponse> getOrderByUserId(@PathVariable UUID userId) {
         List<OrderDTO> orderDTOList = orderService.getOrdersByUserId(userId);
         DataResponse dataResponse = DataResponse.builder()
